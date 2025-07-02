@@ -1,0 +1,49 @@
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from shapely.geometry import Polygon
+
+# Load world data
+world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+
+# Focus on Europe
+europe = world[(world['continent'] == 'Europe') | (world['name'] == 'Turkey')]
+
+# Simplified approximation of Napoleonic Empire at its height (~1812)
+# We'll use rough polygons for France's sphere of influence
+napoleonic_empire = gpd.GeoDataFrame({
+    'name': ['Napoleonic Empire'],
+    'geometry': [Polygon([
+        (-10, 35), (20, 35), (20, 52), (10, 55), (5, 55), (0, 53), (-5, 51), (-10, 45), (-10, 35)
+    ])]
+}, crs="EPSG:4326")
+
+# Plotting
+fig, ax = plt.subplots(figsize=(12, 10))
+europe.boundary.plot(ax=ax, linewidth=0.8, color='black')
+europe.plot(ax=ax, color='lightgray')
+
+# Plot Napoleonic Empire overlay
+napoleonic_empire.plot(ax=ax, color='red', alpha=0.4, edgecolor='darkred', label='Napoleonic Empire (~1812)')
+
+# Add labels for major powers of the time
+labels = {
+    'United Kingdom': (-3, 55),
+    'Prussia': (12, 52),
+    'Austria': (14, 48),
+    'Russia': (30, 55),
+    'Ottoman Empire': (28, 42),
+    'Spain': (-4, 40),
+    'France': (2, 47),
+}
+
+for name, (x, y) in labels.items():
+    ax.text(x, y, name, fontsize=10, ha='center', weight='bold')
+
+# Styling
+ax.set_title('Europe During the Napoleonic Era (1799–1815)', fontsize=16)
+ax.set_xlim(-25, 45)
+ax.set_ylim(30, 70)
+ax.axis('off')
+plt.legend()
+plt.tight_layout()
+plt.show()
